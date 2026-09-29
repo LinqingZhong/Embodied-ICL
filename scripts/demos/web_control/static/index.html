@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Isaac Lab · 仿真控制台</title>
+    <link rel="stylesheet" href="/static/app.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <span class="eyebrow">ISAAC LAB / REMOTE WORKSPACE</span>
+        <h1>仿真控制台 <span id="robot-name">正在加载</span></h1>
+      </div>
+      <div id="connection" class="badge">正在连接</div>
+    </header>
+    <main>
+      <section class="stats" aria-label="仿真状态">
+        <div><span>仿真时间</span><strong id="sim-time">—</strong></div>
+        <div><span>运行模式</span><strong id="mode">初始化</strong></div>
+        <div><span>画面距今</span><strong id="frame-age">—</strong></div>
+        <div><span>夹爪状态</span><strong id="gripper-width">—</strong></div>
+      </section>
+      <div class="workspace">
+        <section class="views">
+          <div id="camera-list"></div>
+          <div class="capture-bar">
+            <div>
+              <b>多相机快照</b>
+              <p>保存全部相机 JPEG 与同帧关节状态，下载 ZIP 文件。</p>
+            </div>
+            <button id="snapshot" disabled>保存并下载</button>
+          </div>
+        </section>
+        <aside class="control-panel">
+          <div class="section-title">
+            <h2>机器人控制</h2>
+            <span>JOINT SPACE</span>
+          </div>
+          <div class="transport">
+            <button id="pause" disabled>暂停</button
+            ><button id="step" disabled>单步</button
+            ><button id="reset" disabled>重置场景</button>
+          </div>
+          <p class="hint">
+            滑块设置关节目标；单位、步长和限速由机器人配置决定。
+          </p>
+          <div id="joints"></div>
+          <div id="grippers"></div>
+          <p class="hint">
+            仅控制仿真机器人。暂停时可修改目标，在继续或单步时执行。多个页面共享控制状态。
+          </p>
+        </aside>
+      </div>
+      <footer>
+        <span id="message" role="status">正在读取服务器状态…</span
+        ><span>LOCALHOST · SSH TUNNEL</span>
+      </footer>
+      <div id="error" role="alert" hidden></div>
+    </main>
+  </body>
+</html>
