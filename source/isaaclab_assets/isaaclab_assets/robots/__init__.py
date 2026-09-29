@@ -12,6 +12,7 @@ from .agility import *
 from .allegro import *
 from .ant import *
 from .anymal import *
+from .arx import *
 from .cart_double_pendulum import *
 from .cartpole import *
 from .cassie import *

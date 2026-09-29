@@ -1,0 +1,4 @@
+# Keep this demo's checks despite the repository-wide tests/ exclusion.
+!tests/
+!tests/*.py
+!tests/*.cjs

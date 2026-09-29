@@ -1,0 +1,3 @@
+# Keep the bundled rendering asset and its referenced USD layers.
+!*.usd
+!configuration/*.usd

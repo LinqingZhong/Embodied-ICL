@@ -1,0 +1,293 @@
+{
+  "repo": "https://huggingface.co/datasets/RoboDojo-Benchmark/RoboDojo/resolve/main/",
+  "files": [
+    {
+      "type": "directory",
+      "oid": "8e4eccc32c51adfd0be45db9fa3a9d41bb0a1581",
+      "size": 0,
+      "path": "Assets/Robots/x5/configuration"
+    },
+    {
+      "type": "directory",
+      "oid": "7b9002a28f5e6e3f92429f8c97109ce04b122c12",
+      "size": 0,
+      "path": "Assets/Robots/x5/meshes"
+    },
+    {
+      "type": "file",
+      "oid": "45f0bb7006fa141bf73f6f31d5893a6958cf0f1e",
+      "size": 28300821,
+      "lfs": {
+        "oid": "5723a835bf5627a935a8dabb3a44447725bd1465243ce791e221b3e990121d63",
+        "size": 28300821,
+        "pointerSize": 133
+      },
+      "xetHash": "64c6fc9fec8678038d5487c48d6cf95871da6f5a367a63ae5bdbda4c4bfe6e92",
+      "path": "Assets/Robots/x5/ARX.usd"
+    },
+    {
+      "type": "file",
+      "oid": "24f163e5deafaafe89398592ac4f9405186956bb",
+      "size": 9218,
+      "lfs": {
+        "oid": "7aaa308a1a5b6a213d914db86ba09ddd6252f25cb498ac9a148bfa6c7166a423",
+        "size": 9218,
+        "pointerSize": 129
+      },
+      "xetHash": "7b2c8f459443105c23ce516e174e32d268b39b41e257c2e94dc8525e54bf2689",
+      "path": "Assets/Robots/x5/X5A.urdf"
+    },
+    {
+      "type": "file",
+      "oid": "55889f96fa9d68de52093473fb2e26d88fe77295",
+      "size": 28281338,
+      "lfs": {
+        "oid": "01a382332e3a60ee2fc61013d2ad13dd0df287d43142e2b854a6b3853e0c892b",
+        "size": 28281338,
+        "pointerSize": 133
+      },
+      "xetHash": "2003ca80ae58f840b00b1645a654e97bfa1f90cc584c17e73e1998badc34659d",
+      "path": "Assets/Robots/x5/configuration/ARX_base.usd"
+    },
+    {
+      "type": "file",
+      "oid": "af736deec42cc42ec7b25af3a656075727dcc24c",
+      "size": 5459,
+      "lfs": {
+        "oid": "96369690dd2a0bdc583f21e7a985e2a0c0d9a50e0f4c6d41d8dc4d9c918df53b",
+        "size": 5459,
+        "pointerSize": 129
+      },
+      "xetHash": "7c8437490838520d19b54c5fb63f9a87d76c4a874d036373450bf034078349ac",
+      "path": "Assets/Robots/x5/configuration/ARX_physics.usd"
+    },
+    {
+      "type": "file",
+      "oid": "f10a40deb4436251b82bc73ef8db1caa1a4f4de4",
+      "size": 1843,
+      "lfs": {
+        "oid": "89b2d4349c05691d71d13007f7747e61b64ab5bf7707cca55fcb0e575f45a063",
+        "size": 1843,
+        "pointerSize": 129
+      },
+      "xetHash": "0b7535a35ba6f5b2f0a9b1fc3a7e206273f74fba52a6c029df30045f98cd530b",
+      "path": "Assets/Robots/x5/configuration/ARX_robot.usd"
+    },
+    {
+      "type": "file",
+      "oid": "06ef0ccd5763eb4eca8a4eae8c6da6591dc8a4da",
+      "size": 643,
+      "lfs": {
+        "oid": "7dfddb8b25ea5ff43e327b63b22c496141bc727c89b616a06e022abcca847677",
+        "size": 643,
+        "pointerSize": 128
+      },
+      "xetHash": "1ea0b1f3bc8c009cb9a58f8ab94e684cac8b8582d0ae6444a6238709ba91a0b9",
+      "path": "Assets/Robots/x5/configuration/ARX_sensor.usd"
+    },
+    {
+      "type": "file",
+      "oid": "c4ba39cf5aa794dec45edf04d4b509805871b213",
+      "size": 28282173,
+      "lfs": {
+        "oid": "18ac17e17edc1e6e1661f3b20cf59edd3ba4292150dfcb02c4f5c1def2a199ec",
+        "size": 28282173,
+        "pointerSize": 133
+      },
+      "xetHash": "fe47aa9b6401a3e8c91698cf32fa09a67c8218625700d72af4ca73ec9e95b6ba",
+      "path": "Assets/Robots/x5/configuration/X5A_temp_base.usd"
+    },
+    {
+      "type": "file",
+      "oid": "82b97f7413e89547860a052290f1f5233ea38951",
+      "size": 5752,
+      "lfs": {
+        "oid": "71959c376a0cb79c9cfef3e7c6449c9aa204590095965bdc37a094c1dad9f1e5",
+        "size": 5752,
+        "pointerSize": 129
+      },
+      "xetHash": "d3109f25823827257515240f07a807550c1d11a736543978e1bd464a8c0056f7",
+      "path": "Assets/Robots/x5/configuration/X5A_temp_physics.usd"
+    },
+    {
+      "type": "file",
+      "oid": "f10a40deb4436251b82bc73ef8db1caa1a4f4de4",
+      "size": 1843,
+      "lfs": {
+        "oid": "89b2d4349c05691d71d13007f7747e61b64ab5bf7707cca55fcb0e575f45a063",
+        "size": 1843,
+        "pointerSize": 129
+      },
+      "xetHash": "0b7535a35ba6f5b2f0a9b1fc3a7e206273f74fba52a6c029df30045f98cd530b",
+      "path": "Assets/Robots/x5/configuration/X5A_temp_robot.usd"
+    },
+    {
+      "type": "file",
+      "oid": "06ef0ccd5763eb4eca8a4eae8c6da6591dc8a4da",
+      "size": 643,
+      "lfs": {
+        "oid": "7dfddb8b25ea5ff43e327b63b22c496141bc727c89b616a06e022abcca847677",
+        "size": 643,
+        "pointerSize": 128
+      },
+      "xetHash": "1ea0b1f3bc8c009cb9a58f8ab94e684cac8b8582d0ae6444a6238709ba91a0b9",
+      "path": "Assets/Robots/x5/configuration/X5A_temp_sensor.usd"
+    },
+    {
+      "type": "file",
+      "oid": "a389e3c2e7a8cca3ca8e69cb79e55436013112d7",
+      "size": 12526,
+      "lfs": {
+        "oid": "5eea08bf7ef276bf9dfd078ef9f69221e9a67c8cf6cd19fce5ef66d42e96b3f2",
+        "size": 12526,
+        "pointerSize": 130
+      },
+      "xetHash": "b9b64b986808224d85e1a3a2244c91971b3996064d20cee9f33bcf99bd46dc66",
+      "path": "Assets/Robots/x5/curobo_tmp.yml"
+    },
+    {
+      "type": "file",
+      "oid": "6532aa58efa197ba50c4d252e8299f4c3a0da9af",
+      "size": 1611284,
+      "lfs": {
+        "oid": "898dbe3af3a98857358ac5a3d74e085ec9c69946737e767dad139776761cbd92",
+        "size": 1611284,
+        "pointerSize": 132
+      },
+      "xetHash": "bd5a11104161c5b6101feef59e923fdde3fc852c06d0723a742c188e830719a8",
+      "path": "Assets/Robots/x5/meshes/base_link.STL"
+    },
+    {
+      "type": "file",
+      "oid": "c4bea71e3276fff3dbd825b88b68ff250922f8c6",
+      "size": 15899328,
+      "lfs": {
+        "oid": "9833e436988bcd83f3113ab1071428427c80d6a1392d9e0b7cf35d2b6e949d7c",
+        "size": 15899328,
+        "pointerSize": 133
+      },
+      "xetHash": "4f50c3217e16a5727b868c714290429cac6ef29be33f2cc78a7b7e6d736c4cb5",
+      "path": "Assets/Robots/x5/meshes/camera.glb"
+    },
+    {
+      "type": "file",
+      "oid": "2113e94c722ca2b42c5678f460bdd0e8a3c219d1",
+      "size": 62332,
+      "lfs": {
+        "oid": "d771a24ab886166536ffe4a0719af1163e44fac4067e07110cf72a7a01d260b0",
+        "size": 62332,
+        "pointerSize": 130
+      },
+      "xetHash": "219f0f6bdccd0581733fe271e4b4c69c441fbf5455ffa912e55a8da7b2a2a44a",
+      "path": "Assets/Robots/x5/meshes/camera_base.glb"
+    },
+    {
+      "type": "file",
+      "oid": "5e5cf5feff7cd7d8695cee6b5d1ed55de9d59e30",
+      "size": 162184,
+      "lfs": {
+        "oid": "04a52b86a5b28c847377a9167e7effab0478fa591052e83b0b32cf8709bb3885",
+        "size": 162184,
+        "pointerSize": 131
+      },
+      "xetHash": "1cc5aa32344b5c997e45c90f4cffefbb7bf022413cf912a4ac129c85a22ee91d",
+      "path": "Assets/Robots/x5/meshes/link1.STL"
+    },
+    {
+      "type": "file",
+      "oid": "5a3dc4c31ae213d358d13acc94a3631bf0228247",
+      "size": 4353884,
+      "lfs": {
+        "oid": "2865da6a962c814abaf9251497bcf5f5e3b67610e3b657ddcaa9de8b3d45e83e",
+        "size": 4353884,
+        "pointerSize": 132
+      },
+      "xetHash": "f224bf6889f23fd6de2b5dd32037d8617d49112c1f01e431a167442e4fe8700b",
+      "path": "Assets/Robots/x5/meshes/link2.STL"
+    },
+    {
+      "type": "file",
+      "oid": "cd3831724a6c4cbe0a3d6c86ffb48a558844bed2",
+      "size": 1052684,
+      "lfs": {
+        "oid": "3ac2411b0cbffcf4808cae4c215cfeab607f240cd124eeba209ac7986ac047c0",
+        "size": 1052684,
+        "pointerSize": 132
+      },
+      "xetHash": "5fe7e73a011e904c5f8eb7fc1d2b238748220967689b66577b5c46ef3ccabcc4",
+      "path": "Assets/Robots/x5/meshes/link3.STL"
+    },
+    {
+      "type": "file",
+      "oid": "7a02de5c1e6acfe96ce6c8687e1c93d4ea14d8fe",
+      "size": 142784,
+      "lfs": {
+        "oid": "3447ddef920c22e4607b887e1cc588037dfb51c37825c4cac86a5391425469c4",
+        "size": 142784,
+        "pointerSize": 131
+      },
+      "xetHash": "d2912535d3de21e3a4910ddb4f44da64be7f7cb1ebc92c4a2388a51745b8d505",
+      "path": "Assets/Robots/x5/meshes/link4.STL"
+    },
+    {
+      "type": "file",
+      "oid": "ce3d65cfb78e8065de96e456b0a06e6a71c2e038",
+      "size": 679584,
+      "lfs": {
+        "oid": "934b3e70ce2987f8de999de29d8ef72c8370dced8e9fdf6f9ddd3e7e24c1e464",
+        "size": 679584,
+        "pointerSize": 131
+      },
+      "xetHash": "ab250d5425285b8c2074859a07b7cabce41cae594dc52ff5c78a800f2fcc4829",
+      "path": "Assets/Robots/x5/meshes/link5.STL"
+    },
+    {
+      "type": "file",
+      "oid": "e78a94aa6973f9f01de45176c4f0e17b0d185ed4",
+      "size": 643784,
+      "lfs": {
+        "oid": "32dca4ededcf3215163207b9aea1046114ae59921555d1e068ee46fa6e53915e",
+        "size": 643784,
+        "pointerSize": 131
+      },
+      "xetHash": "b25705ad4b85c669fc484c43133cbc69037ac0af36799c76b09f987a584fdb12",
+      "path": "Assets/Robots/x5/meshes/link6.STL"
+    },
+    {
+      "type": "file",
+      "oid": "71c00d30d73d785a2bb31b88038aec6e30a1b579",
+      "size": 65284,
+      "lfs": {
+        "oid": "ec3d40b39cccde0075ca3d16603f14f180fce41a46b446473d384def7a1b0be0",
+        "size": 65284,
+        "pointerSize": 130
+      },
+      "xetHash": "55149786eec5fa088c372a88b3024d6a724c4b2908f5288a7bed01882591b947",
+      "path": "Assets/Robots/x5/meshes/link7.STL"
+    },
+    {
+      "type": "file",
+      "oid": "7acde1c443ed69cd3e54c5c96d0cd91fffd0e262",
+      "size": 65284,
+      "lfs": {
+        "oid": "29f7a8379cad81797e82e4ba099455cc275ac6ac5bb9e264ce46719fd7d2bb60",
+        "size": 65284,
+        "pointerSize": 130
+      },
+      "xetHash": "a84fcefae62f20e7fa0e7c28f438e748eb5bed5f30d68c4614ef9d560203bac0",
+      "path": "Assets/Robots/x5/meshes/link8.STL"
+    },
+    {
+      "type": "file",
+      "oid": "4d23bf5e1da782832bbb815e009db6fde84fdf91",
+      "size": 794,
+      "lfs": {
+        "oid": "9de4f63b84c0f730623c09af7a2d530d84973981397280b6e4b626b50ba6f1c9",
+        "size": 794,
+        "pointerSize": 128
+      },
+      "xetHash": "00fbb3ca03a0c61c580586891cba3a1e29f2b9b3ed786873fb8000ff47b5b341",
+      "path": "Assets/Robots/x5/robot_config.yml"
+    }
+  ]
+}
