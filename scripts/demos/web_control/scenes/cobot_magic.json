@@ -1,0 +1,62 @@
+{
+  "ground_z": 0,
+  "scene_eye": [
+    2,
+    2,
+    2.2
+  ],
+  "scene_target": [
+    0,
+    0,
+    1
+  ],
+  "wrist_target": [
+    0.45,
+    0,
+    0.72
+  ],
+  "assets": [
+    {
+      "name": "Table",
+      "usd_path": "isaac://Props/Mounts/SeattleLabTable/table_instanceable.usd",
+      "mode": "static",
+      "position": [
+        0.5,
+        0,
+        0.6
+      ],
+      "orientation": [
+        0.70710678,
+        0,
+        0,
+        0.70710678
+      ],
+      "scale": [
+        1,
+        1,
+        0.6
+      ]
+    },
+    {
+      "name": "Bottle",
+      "usd_path": "isaac://Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
+      "mode": "dynamic",
+      "position": [
+        0.45,
+        0,
+        0.72
+      ],
+      "orientation": [
+        0.70710678,
+        -0.70710678,
+        0,
+        0
+      ]
+    }
+  ],
+  "robot_position": [
+    -0.6,
+    0,
+    0.15
+  ]
+}

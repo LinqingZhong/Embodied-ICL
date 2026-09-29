@@ -8,6 +8,7 @@
 ##
 
 from .agibot import *
+from .agilex import *
 from .agility import *
 from .allegro import *
 from .ant import *

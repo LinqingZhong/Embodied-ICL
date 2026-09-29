@@ -1,0 +1,3 @@
+# Keep the converted rendering asset and its referenced USD layers.
+!usd/*.usd
+!usd/configuration/*.usd
