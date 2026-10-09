@@ -1,0 +1,78 @@
+{
+  "ground_z": -1.05,
+  "scene_eye": [
+    1.8,
+    1.6,
+    1.3
+  ],
+  "scene_target": [
+    0.4,
+    0,
+    0.1
+  ],
+  "wrist_target": [
+    0.55,
+    0,
+    0.12
+  ],
+  "assets": [
+    {
+      "name": "Table",
+      "usd_path": "isaac://Props/Mounts/SeattleLabTable/table_instanceable.usd",
+      "mode": "static",
+      "position": [
+        0.5,
+        0,
+        0
+      ],
+      "orientation": [
+        0.70710678,
+        0,
+        0,
+        0.70710678
+      ]
+    },
+    {
+      "name": "Apple",
+      "usd_path": "../../../../assets/objects/usd/apple/apple.usd",
+      "mode": "dynamic",
+      "position": [
+        0.55,
+        -0.16,
+        0.004
+      ],
+      "orientation": [
+        0.70710678,
+        0.70710678,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "name": "Banana",
+      "usd_path": "../../../../assets/objects/usd/banana/banana.usd",
+      "mode": "dynamic",
+      "position": [
+        0.55,
+        0.16,
+        0.032
+      ],
+      "orientation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  ]
+}

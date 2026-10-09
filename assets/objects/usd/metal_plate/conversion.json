@@ -1,0 +1,32 @@
+{
+  "source": "assets/objects/raw/plate/metal-plate-fbx/source/Metal_Plate_FBX.zip",
+  "name": "metal_plate",
+  "mode": "static",
+  "source_size_m": [
+    0.43448057770729065,
+    0.42788007855415344,
+    0.039722930639982224
+  ],
+  "scale_correction": 1.0,
+  "size_m": [
+    0.43448057770729065,
+    0.42788007855415344,
+    0.039722930639982224
+  ],
+  "origin": "bottom center",
+  "up_axis": "Z",
+  "mass_kg": null,
+  "mass_note": null,
+  "collision": "triangleMesh",
+  "physics_runtime_tested": false,
+  "conversion": "Blender 4.2 FBX import / USD Preview Surface export; OpenUSD physics authoring",
+  "size_note": "preserved FBX import dimensions",
+  "validation": {
+    "usd_opens": true,
+    "local_dependencies_resolve": true,
+    "loader_physics_structure": true,
+    "dimensions_and_bottom_origin": true,
+    "mesh_count": 1,
+    "texture_files": 4
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "source": "assets/objects/raw/bottle/wine-bottle/source/WineBottle.fbx",
+  "name": "wine_bottle",
+  "mode": "dynamic",
+  "source_size_m": [
+    0.09412258863449097,
+    0.09176281839609146,
+    0.34768036007881165
+  ],
+  "scale_correction": 1.0,
+  "size_m": [
+    0.09412258863449097,
+    0.09176281839609146,
+    0.34768036007881165
+  ],
+  "origin": "bottom center",
+  "up_axis": "Z",
+  "mass_kg": 0.5,
+  "mass_note": "estimated for simulation",
+  "collision": "convexHull",
+  "physics_runtime_tested": false,
+  "conversion": "Blender 4.2 FBX import / USD Preview Surface export; OpenUSD physics authoring",
+  "size_note": "preserved FBX import dimensions",
+  "validation": {
+    "usd_opens": true,
+    "local_dependencies_resolve": true,
+    "loader_physics_structure": true,
+    "dimensions_and_bottom_origin": true,
+    "mesh_count": 1,
+    "texture_files": 4
+  }
+}

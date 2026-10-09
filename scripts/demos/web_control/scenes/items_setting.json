@@ -1,0 +1,167 @@
+{
+  "ground_z": -1.05,
+  "scene_eye": [
+    1.5,
+    1.25,
+    1.3
+  ],
+  "scene_target": [
+    0.5,
+    0,
+    0.08
+  ],
+  "wrist_target": [
+    0.55,
+    0,
+    0.12
+  ],
+  "assets": [
+    {
+      "name": "Table",
+      "usd_path": "isaac://Props/Mounts/SeattleLabTable/table_instanceable.usd",
+      "mode": "static",
+      "position": [
+        0.5,
+        0,
+        0
+      ],
+      "orientation": [
+        0.70710678,
+        0,
+        0,
+        0.70710678
+      ]
+    },
+    {
+      "name": "WoodPlate",
+      "usd_path": "../../../../assets/objects/usd/wood_plate/wood_plate.usd",
+      "mode": "static",
+      "position": [
+        0.63,
+        -0.19,
+        0.004
+      ],
+      "orientation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    {
+      "name": "MetalPlate",
+      "usd_path": "../../../../assets/objects/usd/metal_plate/metal_plate.usd",
+      "mode": "static",
+      "position": [
+        0.63,
+        0.19,
+        0.004
+      ],
+      "orientation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.65,
+        0.65,
+        0.65
+      ]
+    },
+    {
+      "name": "BeerBottle",
+      "usd_path": "../../../../assets/objects/usd/beer_bottle/beer_bottle.usd",
+      "mode": "dynamic",
+      "position": [
+        0.31,
+        -0.24,
+        0.004
+      ],
+      "orientation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "Orange",
+      "usd_path": "../../../../assets/objects/usd/orange/orange.usd",
+      "mode": "dynamic",
+      "position": [
+        0.33,
+        -0.075,
+        0.004
+      ],
+      "orientation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.85,
+        0.85,
+        0.85
+      ]
+    },
+    {
+      "name": "Pear",
+      "usd_path": "../../../../assets/objects/usd/pear/pear.usd",
+      "mode": "dynamic",
+      "position": [
+        0.33,
+        0.075,
+        0.004
+      ],
+      "orientation": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.85,
+        0.85,
+        0.85
+      ]
+    },
+    {
+      "name": "Apple",
+      "usd_path": "../../../../assets/objects/usd/apple/apple.usd",
+      "mode": "dynamic",
+      "position": [
+        0.32,
+        0.24,
+        0.004
+      ],
+      "orientation": [
+        0.70710678,
+        0.70710678,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "robot_position": [
+    0,
+    0,
+    0
+  ]
+}

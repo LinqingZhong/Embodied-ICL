@@ -1,0 +1,32 @@
+{
+  "source": "assets/objects/raw/orange/orange/source/Orange.fbx",
+  "name": "orange",
+  "mode": "dynamic",
+  "source_size_m": [
+    0.6509307622909546,
+    0.6659951210021973,
+    0.6681650876998901
+  ],
+  "scale_correction": 0.11973088907622247,
+  "size_m": [
+    0.07793652266263962,
+    0.07974018901586533,
+    0.07999999821186066
+  ],
+  "origin": "bottom center",
+  "up_axis": "Z",
+  "mass_kg": 0.18,
+  "mass_note": "estimated for simulation",
+  "collision": "convexHull",
+  "physics_runtime_tested": false,
+  "conversion": "Blender 4.2 FBX import / USD Preview Surface export; OpenUSD physics authoring",
+  "size_note": "assumed target height/diameter",
+  "validation": {
+    "usd_opens": true,
+    "local_dependencies_resolve": true,
+    "loader_physics_structure": true,
+    "dimensions_and_bottom_origin": true,
+    "mesh_count": 1,
+    "texture_files": 2
+  }
+}

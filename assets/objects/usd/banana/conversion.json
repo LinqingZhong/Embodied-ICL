@@ -1,0 +1,18 @@
+{
+  "source": "../../raw/banana/banana-3d-scan/source/Banana.obj",
+  "source_units_assumption": "millimeters",
+  "scale_to_meters": 0.001,
+  "origin": "center of axis-aligned bounding box",
+  "size_meters": [
+    0.2062496393918991,
+    0.1306721568107605,
+    0.053838565945625305
+  ],
+  "mass_kg": 0.15,
+  "collision": "convexDecomposition",
+  "vertices": 500002,
+  "triangles": 1000000,
+  "texture": "textures/Banana_1.jpg",
+  "conversion": "OpenUSD 24.11; reconstructed diffuse material from supplied Banana_1.jpg; generated smooth vertex normals",
+  "physics_runtime_tested": false
+}

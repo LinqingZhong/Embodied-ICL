@@ -1,0 +1,32 @@
+{
+  "source": "assets/objects/raw/plate/wood-plate-fbx/source/Wood_Plate_FBX.zip",
+  "name": "wood_plate",
+  "mode": "static",
+  "source_size_m": [
+    0.3687759339809418,
+    0.36317333579063416,
+    0.03371577337384224
+  ],
+  "scale_correction": 1.0,
+  "size_m": [
+    0.3687759339809418,
+    0.36317333579063416,
+    0.03371577337384224
+  ],
+  "origin": "bottom center",
+  "up_axis": "Z",
+  "mass_kg": null,
+  "mass_note": null,
+  "collision": "triangleMesh",
+  "physics_runtime_tested": false,
+  "conversion": "Blender 4.2 FBX import / USD Preview Surface export; OpenUSD physics authoring",
+  "size_note": "preserved FBX import dimensions",
+  "validation": {
+    "usd_opens": true,
+    "local_dependencies_resolve": true,
+    "loader_physics_structure": true,
+    "dimensions_and_bottom_origin": true,
+    "mesh_count": 1,
+    "texture_files": 4
+  }
+}
