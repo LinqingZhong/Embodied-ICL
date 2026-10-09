@@ -1,0 +1,3 @@
+# Keep this package's tests despite the repository-wide tests/ ignore rule.
+!tests/
+!tests/*.py

@@ -1,0 +1,11 @@
+{
+  "model": "gpt-6-astra",
+  "endpoint": "https://lingzhi.agibot.com/v1/responses",
+  "api_key_env": "OPENAI_API_KEY",
+  "reasoning_effort": "high",
+  "max_output_tokens": 16384,
+  "timeout": 180,
+  "max_chunk_size": 32,
+  "history_steps": 4,
+  "preserve_reasoning": false
+}
