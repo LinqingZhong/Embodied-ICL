@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[4]
 sys.path[:0] = [str(ROOT / "scripts/demos/web_control"), str(ROOT / "source/isaaclab_policies")]
 
 from isaaclab_policies import GPTConfig, GPTPolicy, PolicyRunner, RobotAdapter
+from policy_inputs import add_task_arguments, load_task_input, validate_task_arguments
 from robot_client import RobotClient
 
 
@@ -49,8 +50,8 @@ class CameraClient:
 
 
 class RecordedGPTPolicy(GPTPolicy):
-    def __init__(self, config, directory):
-        super().__init__(config)
+    def __init__(self, config, directory, *, demonstration=None):
+        super().__init__(config, demonstration=demonstration)
         self.directory = directory
         self.turn = 0
         self.results = []
@@ -67,9 +68,20 @@ class RecordedGPTPolicy(GPTPolicy):
             )
 
     def reset(self, instruction, robot):
-        super().reset(instruction, robot)
         save_json(self.directory / "robot_spec.json", asdict(robot))
-        (self.directory / "instructions.txt").write_text(self._instructions, encoding="utf-8")
+        if self.demonstration is not None:
+            self.demonstration.save(self.directory / "demonstration")
+        try:
+            super().reset(instruction, robot)
+        finally:
+            if hasattr(self, "_instructions"):
+                (self.directory / "instructions.txt").write_text(self._instructions, encoding="utf-8")
+            if self.demonstration_interpretation is not None:
+                save_json(self.directory / "demonstration_interpretation.json", self.demonstration_interpretation)
+            if self.demonstration_instruction is not None:
+                (self.directory / "demonstration_instruction.txt").write_text(
+                    self.demonstration_instruction, encoding="utf-8"
+                )
 
     def predict(self, observation):
         self.turn += 1
@@ -102,13 +114,25 @@ class RecordedGPTPolicy(GPTPolicy):
         ]
         if "scene" in names:
             raise ValueError("Scene image leaked into model request")
+        image_count = sum(
+            part.get("type") == "input_image"
+            for item in payload["input"]
+            if item.get("role") == "user"
+            for part in item["content"]
+        )
         self.event(
             "model_request",
+            icl_mode=self.config.icl_mode,
             model=payload["model"],
             endpoint=self.config.endpoint,
             reasoning_effort=self.config.reasoning_effort,
             input_items=len(payload["input"]),
-            image_count=len(names),
+            image_count=image_count,
+            robot_image_count=len(names),
+            demonstration_image_count=image_count - len(names),
+            phase="demonstration_interpretation"
+            if payload["tools"][0]["name"] == "interpret_demonstration"
+            else "control",
             cameras=sorted(set(names)),
             tools=[tool["name"] for tool in payload["tools"]],
         )
@@ -135,36 +159,52 @@ class RecordedGPTPolicy(GPTPolicy):
         super().observe_result(result)
 
 
-def main():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--url", default="http://127.0.0.1:8083")
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--cameras", nargs="+", required=True)
-    parser.add_argument("--instruction", required=True)
+    add_task_arguments(parser)
     parser.add_argument("--max-steps", type=int, default=40)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    validate_task_arguments(parser, args)
+    if args.max_steps < 1:
+        parser.error("--max-steps must be positive")
+    return args
+
+
+def main(argv=None):
+    args = parse_args(argv)
     args.output.mkdir(parents=True, exist_ok=True)
     if (args.output / "trace.jsonl").exists():
         raise FileExistsError("Use a new attempt directory")
-    config = GPTConfig(**json.loads(args.config.read_text()))
+    config_data = json.loads(args.config.read_text())
+    if not isinstance(config_data, dict):
+        raise ValueError("Policy config must contain a JSON object")
+    if args.icl_mode is not None:
+        config_data["icl_mode"] = args.icl_mode
+    config = GPTConfig(**config_data)
+    instruction, demonstration = load_task_input(args)
     client = RobotClient(args.url, timeout=90)
     robot = RobotAdapter(CameraClient(client, args.cameras), action_timeout=180)
     robot.check_ready()
     spec = robot.get_robot_spec()
-    policy = RecordedGPTPolicy(config, args.output)
+    policy = RecordedGPTPolicy(config, args.output, demonstration=demonstration)
     policy.event(
         "start",
-        instruction=args.instruction,
+        instruction=instruction,
+        task_source="human_video" if demonstration is not None else "text",
+        icl_mode=config.icl_mode,
         model=config.model,
         cameras=args.cameras,
         endpoint=config.endpoint,
         robot=spec.name,
     )
-    recording = client.start_recording(args.instruction)
+    recording = client.start_recording(instruction)
     error = None
     try:
-        PolicyRunner(policy, robot, observation_timeout=30).run(args.instruction, args.max_steps)
+        PolicyRunner(policy, robot, observation_timeout=30).run(instruction, args.max_steps)
     except (Exception, KeyboardInterrupt) as exc:
         error = f"{type(exc).__name__}: {exc}"
         policy.event("error", error=error)
@@ -180,7 +220,12 @@ def main():
             endpoint=config.endpoint,
             policy_config=asdict(config),
             cameras=args.cameras,
-            instruction=args.instruction,
+            instruction=instruction,
+            task_source="human_video" if demonstration is not None else "text",
+            icl_mode=config.icl_mode,
+            demonstration_manifest="demonstration/manifest.json" if demonstration is not None else None,
+            demonstration_interpretation=policy.demonstration_interpretation,
+            demonstration_instruction=policy.demonstration_instruction,
             max_steps=args.max_steps,
             recording=stopped,
             error=error,

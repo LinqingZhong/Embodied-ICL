@@ -13,6 +13,13 @@ from dataclasses import asdict, dataclass, field
 from urllib.parse import urlparse
 
 from .base import BasePolicy
+from .demonstration import (
+    INTERPRETATION_INSTRUCTIONS,
+    VideoDemonstration,
+    demonstration_instruction,
+    interpretation_tool,
+    parse_interpretation,
+)
 from .types import (
     ActionResult,
     EefActionChunk,
@@ -40,6 +47,7 @@ class GPTConfig:
     max_chunk_size: int = 32
     history_steps: int = 4
     preserve_reasoning: bool = True
+    icl_mode: str = "frames"
 
     def __post_init__(self):
         parsed = urlparse(self.endpoint)
@@ -63,6 +71,8 @@ class GPTConfig:
             raise ValueError("history_steps must be an integer in [0, 32]")
         if type(self.preserve_reasoning) is not bool:
             raise ValueError("preserve_reasoning must be a boolean")
+        if self.icl_mode not in ("frames", "description"):
+            raise ValueError("icl_mode must be 'frames' or 'description'")
         if self.max_output_tokens is not None and (
             type(self.max_output_tokens) is not int or self.max_output_tokens < 1
         ):
@@ -75,6 +85,7 @@ INSTRUCTIONS = """You control a simulated robot using only RGB images and measur
 Follow the task instruction and reobserve after each short action chunk. Use exactly one tool per turn.
 Joint targets are ABSOLUTE values in each joint's native unit (rad or m), in the explicit joint_names column order.
 Grippers are ordinary named joints: use the supplied open/close maps, including coupled joints and opposite signs.
+Joint limits are checked exactly: copy boundary values without rounding outward, or choose targets strictly inside them.
 EEF positions are ABSOLUTE flange positions in the selected arm's BASE frame, in metres; quaternions are unit wxyz.
 EEF targets refer to the flange, not the finger contact centre. They are NOT world coordinates or delta poses.
 Use images and the supplied base/flange definitions; do not assume calibrated camera extrinsics are available.
@@ -89,8 +100,11 @@ Do not claim a grasp from tool completion alone.
 
 
 class GPTPolicy(BasePolicy):
-    def __init__(self, config: GPTConfig | None = None):
+    def __init__(self, config: GPTConfig | None = None, *, demonstration: VideoDemonstration | None = None):
         self.config = config or GPTConfig()
+        self.demonstration = demonstration
+        self._demonstration_interpretation = None
+        self._demonstration_instruction = None
         key_name = self.config.api_key_env
         if key_name is None:
             key_name = "ASTRA_API_KEY" if os.environ.get("ASTRA_API_KEY") else "OPENAI_API_KEY"
@@ -102,6 +116,14 @@ class GPTPolicy(BasePolicy):
         self._history = deque(maxlen=self.config.history_steps)
         self._seen_call_ids = set()
         self._finished = False
+
+    @property
+    def demonstration_interpretation(self):
+        return copy.deepcopy(self._demonstration_interpretation)
+
+    @property
+    def demonstration_instruction(self):
+        return self._demonstration_instruction
 
     def reset(self, instruction: str, robot: RobotSpec) -> None:
         if not isinstance(instruction, str) or not instruction.strip():
@@ -123,6 +145,37 @@ class GPTPolicy(BasePolicy):
         self._seen_call_ids.clear()
         self._pending = None
         self._finished = False
+        self._demonstration_interpretation = None
+        self._demonstration_instruction = None
+        if self.demonstration is not None:
+            self._instructions += (
+                "\nThe reference human video defines the task. Match its object interaction and final outcome, "
+                "not human joint angles, camera pixel locations or exact timing. Ground motion in current robot views. "
+                "The interpretation is a hypothesis, not a success signal. If corresponding objects or destination "
+                "are unavailable or the goal is ambiguous, finish with the limitation rather than inventing a task."
+            )
+            # Interpret before the runner fetches a live observation, so this extra inference cannot stale it.
+            payload = self._build_payload(self.demonstration.message())
+            payload.update(
+                instructions=INTERPRETATION_INSTRUCTIONS + "\nUser task guidance: " + instruction,
+                input=[self.demonstration.message()],
+                tools=[interpretation_tool()],
+            )
+            try:
+                self._demonstration_interpretation = parse_interpretation(self._request(payload))
+                if self._demonstration_interpretation["status"] != "ready":
+                    raise RuntimeError("Demonstration task is unclear; no robot action dispatched")
+                self._demonstration_instruction = demonstration_instruction(self._demonstration_interpretation)
+                if self.config.icl_mode == "description":
+                    self._instructions += (
+                        "\nThe reference was interpreted once; reference images are not provided during control. "
+                        "Use the following generated task instruction and current robot observations. "
+                        "Preserve uncertainties; do not treat inferred details as measured facts.\n"
+                        + self._demonstration_instruction
+                    )
+            except BaseException:
+                self._finished = True
+                raise
 
     def predict(self, observation: PolicyObservation) -> PolicyAction:
         if self._robot is None or self._finished:
@@ -203,10 +256,21 @@ class GPTPolicy(BasePolicy):
         return {"role": "user", "content": content}
 
     def _build_payload(self, message: dict) -> dict:
+        reference = []
+        if self.demonstration is not None and self.config.icl_mode == "frames":
+            reference.append(self.demonstration.message())
+            if self._demonstration_interpretation is not None:
+                reference.append(
+                    {
+                        "role": "assistant",
+                        "content": "My visual interpretation of the reference (not robot feedback): "
+                        + json.dumps(self._demonstration_interpretation, ensure_ascii=False),
+                    }
+                )
         payload = dict(
             model=self.config.model,
             instructions=self._instructions,
-            input=[item for turn in self._history for item in turn] + [message],
+            input=reference + [item for turn in self._history for item in turn] + [message],
             tools=self._tools(),
             tool_choice="required",
             parallel_tool_calls=False,
@@ -327,8 +391,19 @@ class GPTPolicy(BasePolicy):
                 return json.load(reply)
         except urllib.error.HTTPError as exc:
             status = exc.code
-            exc.close()
-            raise RuntimeError(f"GPT API HTTP {status}; no action dispatched") from None
+            detail = ""
+            try:
+                # Recognize the documented rejection code without echoing arbitrary
+                # provider messages, which may contain credentials or request content.
+                body = json.loads(exc.read(65536))
+                error = body.get("error") if isinstance(body, dict) else None
+                if isinstance(error, dict) and error.get("code") == "content_policy_violation":
+                    detail = " (content_policy_violation: provider blocked image processing)"
+            except (ValueError, OSError, http.client.HTTPException):
+                pass
+            finally:
+                exc.close()
+            raise RuntimeError(f"GPT API HTTP {status}{detail}; no action dispatched") from None
         except (urllib.error.URLError, http.client.HTTPException, TimeoutError, ConnectionError, OSError):
             raise RuntimeError("GPT API transport failed; no action dispatched") from None
         except (ValueError, UnicodeError):

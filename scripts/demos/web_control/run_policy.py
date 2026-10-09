@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "source/isaaclab_po
 
 from isaaclab_policies import PolicyRunner, RobotAdapter, create_policy
 from isaaclab_policies.types import validate_action
+from policy_inputs import add_task_arguments, load_task_input, validate_task_arguments
 from robot_client import RobotClient
 
 
@@ -21,7 +22,7 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--policy", default="gpt", help="gpt or an importable module:Class inheriting BasePolicy")
     parser.add_argument("--config", type=Path, help="JSON object passed to the policy constructor")
-    parser.add_argument("--instruction", required=True, help="Robot task instruction")
+    add_task_arguments(parser)
     parser.add_argument("--url", default="http://127.0.0.1:8080")
     parser.add_argument("--max-steps", type=int, default=10, help="Maximum policy decisions, not physics steps")
     parser.add_argument("--action-timeout", type=float, default=120)
@@ -37,8 +38,7 @@ def parse_args(argv=None):
     args = parser.parse_args(argv)
     if args.max_steps < 1:
         parser.error("--max-steps must be positive")
-    if not args.instruction.strip():
-        parser.error("--instruction must be nonempty")
+    validate_task_arguments(parser, args)
     if args.policy != "gpt" and (args.model or args.endpoint):
         parser.error("--model and --endpoint apply only to --policy gpt; use --config for custom policies")
     return args
@@ -48,7 +48,7 @@ def load_policy_config(args) -> dict:
     config = json.loads(args.config.read_text(encoding="utf-8")) if args.config else {}
     if not isinstance(config, dict):
         raise ValueError("Policy config must contain a JSON object")
-    for name in ("model", "endpoint"):
+    for name in ("model", "endpoint", "icl_mode"):
         if getattr(args, name) is not None:
             config[name] = getattr(args, name)
     return config
@@ -72,19 +72,24 @@ def main(argv=None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     try:
         config = load_policy_config(args)
+        instruction, demonstration = load_task_input(args)
         robot = RobotAdapter(RobotClient(args.url, timeout=args.http_timeout), action_timeout=args.action_timeout)
-        policy = create_policy(args.policy, config)
+        policy = create_policy(args.policy, config, demonstration=demonstration)
         # Construct the runner inside cleanup even when its configuration is invalid.
         if args.dry_run:
-            result = predict_once(policy, robot, args.instruction)
+            result = predict_once(policy, robot, instruction)
         else:
             try:
                 runner = PolicyRunner(policy, robot, observation_timeout=args.observation_timeout)
             except Exception:
                 policy.close()
                 raise
-            results = runner.run(args.instruction, args.max_steps)
+            results = runner.run(instruction, args.max_steps)
             result = {"decisions": len(results), "results": [asdict(item) for item in results]}
+        if demonstration is not None:
+            result["icl_mode"] = policy.config.icl_mode
+            result["demonstration_interpretation"] = policy.demonstration_interpretation
+            result["demonstration_instruction"] = policy.demonstration_instruction
         print(json.dumps(result, ensure_ascii=False, allow_nan=False, indent=2))
         return 0
     except KeyboardInterrupt:

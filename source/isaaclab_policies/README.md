@@ -330,8 +330,9 @@ EEF 路径的回执同样是 IK 后所控制关节的实际位置和误差；下
 | `max_chunk_size` | 32，最多预测多少行；EEF 同时受服务端 128 行上限约束 |
 | `history_steps` | 4，保留多少个完整“观测、工具调用、执行回执”历史轮次；0 仅使用当前观测 |
 | `preserve_reasoning` | `true`；是否回传加密 reasoning 历史。不支持验证该内容的网关设为 `false`，仍保留观测、动作与回执 |
+| `icl_mode` | `frames`；视频 ICL 可选 `frames`（每轮附示范帧）或 `description`（首次看示范，之后按生成的文字指令控制） |
 
-显式 JSON 配置优先于环境默认，CLI 的 `--model`、`--endpoint` 又优先于 JSON。参考 RoboICL 使用的代理模型别名可通过这两个参数配置，不在库中写死。
+显式 JSON 配置优先于环境默认，CLI 的 `--model`、`--endpoint`、`--icl-mode` 又优先于 JSON。录制入口也支持 `--icl-mode` 覆盖配置。参考 RoboICL 使用的代理模型别名可通过模型和端点参数配置，不在库中写死。
 
 请求使用非流式 Responses JSON、`store=false`、严格函数 schema、一次一个工具调用。模型不接收机器人控制句柄。仅完整且通过名称、维度、限位及四元数校验的回复才返回动作。历史按完整轮次裁剪，并保留返回的加密 reasoning 项和正确配对的 `call_id`；不记录或解密内部推理。
 
@@ -429,3 +430,43 @@ python -m pytest -q source/isaaclab_policies/tests scripts/demos/web_control/tes
 测试包含本地 Responses HTTP 服务、真实 WebServer/RobotClient 和模拟物理步进的多轮集成；不调用付费模型或启动 GPU。实际配置模型的访问权限、运行速度和物理任务成功率需在目标环境单独验证。
 
 参考：[OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling)、[Responses API](https://developers.openai.com/api/reference/resources/responses/methods/create)。设计参考 RoboICL 的 Responses 工具调用与回执流程，没有迁移其固定双臂 `[T,14]`、世界坐标增量、示范检索或评测框架。
+
+## 从人类视频推断任务
+
+两个入口都支持 `--demo-video /绝对路径/demo.mp4`。有视频时可省略 `--instruction`：程序只补充通用要求“从人类示范推断物体交互任务并用当前机器人复现”，不写入目标物、抓取位置、目的地或预设轨迹。也可以显式提供补充文字，但那就不属于纯视频任务条件的实验。
+
+视频先由本机 `ffprobe` / `ffmpeg` 解码，默认均匀抽取最多 16 帧，保留首尾帧及源视频时间戳；`--demo-frames` 可设 2–32，`--demo-max-side` 默认 768 像素。每段最多 120 秒，建议使用完整、清楚、单任务短片。传给 Responses API 的是有序 JPEG 图像和时间信息，不是 MP4 二进制；不传音频、视频路径、语义文件名或来源网页文字。视频内可见的文字仍属于图像内容。
+
+执行分两步：
+
+1. `GPTPolicy.reset()` 用示范帧调用一次 `interpret_demonstration`，要求模型输出物体描述、观察到的任务、阶段、完成状态和不确定项。此请求没有运动工具。返回 `unclear`、不完整输出或无效结构时退出，不下发动作。
+2. 解释成功后，runner 才获取机器人最新观测，开始原有 `predict → execute → receipt` 循环。`--icl-mode` 控制后续上下文：
+
+| 模式 | 首次解释请求 | 每轮控制请求 |
+|---|---|---|
+| `frames`（默认，兼容原行为） | 有序示范帧 | 全部示范帧、结构化解释、机器人当前状态/相机及历史回执 |
+| `description` | 相同的有序示范帧 | 从解释编成的文字指令、机器人当前状态/相机及历史回执；不再发送示范图片 |
+
+文字指令保留物体描述、任务、顺序步骤、完成条件和不确定项，不额外请求模型或预设关节轨迹。它固定在控制 prompt 中，不随 `history_steps` 裁剪；每次 `reset()` 都重新解释视频并重新生成指令。两种模式的解释均只是模型假设，不是真值或成功证明。无视频时原有文字任务行为不变。
+
+人手关节不会直接转换成机械臂关节。GPT 需要从示范抽取任务，再根据机器人自身视角、原生关节限位和 EEF 定义产生控制；无法识别对应物体或目的地时提示其结束并说明原因。仍沿用现有动作校验与 IK 检查，没有新增自动碰撞规划或姿态回退。
+
+ARX 示例，在已启动配套场景的服务上只传视频：
+
+```bash
+python scripts/demos/web_control/examples/record_gpt_policy.py \
+  --url http://127.0.0.1:8084 \
+  --output output/video_imitation/new_attempt \
+  --config source/isaaclab_policies/configs/gpt_lingzhi.json \
+  --cameras head left_wrist right_wrist \
+  --demo-video /绝对路径/human_demo.mp4 \
+  --demo-frames 16 --icl-mode description --max-steps 40
+```
+
+只检查解释和一次动作提议时，可以使用 `run_policy.py --demo-video ... --config ... --dry-run`；这会发起示范解释和动作预测两次模型请求，不下发运动。通用 `run_policy.py` 使用服务提供的全部相机，排除 `scene` 的实验使用上面的录制入口。
+
+录制目录额外保存 `demonstration/manifest.json`（源文件 SHA256、时间戳）及真正发送的 JPEG，`demonstration_interpretation.json` 保存模型解释，`demonstration_instruction.txt` 保存编成的文字指令（`description` 模式会使用）。`result.json` 和 `trace.jsonl` 记录有效 `icl_mode`；每次请求还记录示范图片数和机器人图片数。`description` 模式中解释请求的示范图片数为抽帧数，之后所有控制请求均为 0；机器人历史图像仍按 `history_steps` 保留。现有视频导出器会将 `interpret_demonstration` 的公开回答一起显示。`frames` 模式每轮重复示范会增加图像 token 和推理耗时。
+
+评估时分别检查示范理解与物理执行：例如物体是否被夹住、搬到示范要求的位置、是否释放或保持。已有 `evaluate_gpt_recording.py` 针对 `/World/GraspCube` 的抬升任务，不能直接用于任意人类视频或瓶子任务。场景重建的尺寸、质量、摩擦和相机安装是仿真假设；单目视频不提供可靠的米制标定。即使接口测试通过，也不能据此声称机器人已经成功模仿人类。
+
+复现绿色桌面和黄色瓶子的近似场景可运行 `python scripts/demos/web_control/examples/create_imitation_scene.py --output-dir output/video_imitation/scene`，随后用 `start_simulation.sh --robot x5_dual --scene-config output/video_imitation/scene/scene.json` 启动。该生成器只写 USD 资产及场景，不生成控制轨迹；依赖 OpenUSD（可使用现有 Isaac Lab Python 环境）。

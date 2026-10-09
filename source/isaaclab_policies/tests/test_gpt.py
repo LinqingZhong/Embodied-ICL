@@ -346,3 +346,132 @@ def test_cli_dry_run_calls_model_but_never_dispatches(provider, tmp_path):
         assert len(requests) == 1
     finally:
         web.stop()
+
+
+def demonstration():
+    from isaaclab_policies.demonstration import DemonstrationFrame, VideoDemonstration
+
+    return VideoDemonstration(
+        (DemonstrationFrame(0, b"\xff\xd8first"), DemonstrationFrame(1, b"\xff\xd8last")),
+        1.2,
+        "a" * 64,
+        "/private/path/put_red_cube_in_bowl.mp4",
+    )
+
+
+def interpretation(status="ready"):
+    return dict(
+        status=status,
+        object_description="a small solid object",
+        observed_task="move the object onto a surface",
+        stages=["approach", "lift", "place"],
+        completion_condition="object rests at the destination",
+        uncertainties=[] if status == "ready" else ["final state is obscured"],
+    )
+
+
+@pytest.mark.parametrize("mode", ["frames", "description"])
+@pytest.mark.parametrize("history_steps", [0, 1])
+def test_video_only_task_interpretation_precedes_motion_and_persists_beyond_history(provider, mode, history_steps):
+    from isaaclab_policies.demonstration import IMITATION_INSTRUCTION
+
+    cfg, requests, responses = provider
+    responses.extend(
+        [
+            response("interpret_demonstration", interpretation(), "interpretation"),
+            response(call_id="move1"),
+            response(call_id="move2"),
+            response(call_id="move3"),
+        ]
+    )
+    policy = GPTPolicy(replace(cfg, history_steps=history_steps, icl_mode=mode), demonstration=demonstration())
+    policy.reset(IMITATION_INSTRUCTION, RobotSpec(**metadata()))
+    assert len(requests) == 1
+    assert {tool["name"] for tool in requests[0][2]["tools"]} == {"interpret_demonstration"}
+    assert "execute_joint_chunk" not in json.dumps(requests[0][2])
+    assert policy.demonstration_interpretation == interpretation()
+    action = policy.predict(policy_observation())
+    feedback(policy, action)
+    action = policy.predict(policy_observation(2))
+    feedback(policy, action)
+    policy.predict(policy_observation(3))
+    assert json.dumps(requests[0][2]).count('"input_image"') == 2
+    for turn, (_, _, payload) in enumerate(requests[1:]):
+        text = json.dumps(payload)
+        assert "put_red_cube_in_bowl" not in text
+        assert "move the object onto a surface" in text
+        assert len(
+            [
+                p
+                for item in payload["input"]
+                for p in item.get("content", [])
+                if isinstance(p, dict) and p.get("type") == "input_image"
+            ]
+        ) == (2 if mode == "frames" else 0) + 1 + min(turn, history_steps)
+        if mode == "description":
+            assert policy.demonstration_instruction in payload["instructions"]
+            assert "object rests at the destination" in payload["instructions"]
+            assert "1. approach" in payload["instructions"]
+            assert "data:image/jpeg;base64,/9hmaXJzdA==" not in text
+        if history_steps == 0:
+            assert not any(item.get("type") == "function_call" for item in payload["input"])
+    policy.close()
+
+
+@pytest.mark.parametrize("mode", ["frames", "description"])
+def test_unclear_demonstration_never_reaches_robot_execution(provider, mode):
+    from isaaclab_policies import PolicyRunner, RobotAdapter
+    from isaaclab_policies.demonstration import IMITATION_INSTRUCTION
+    from test_execution import Client
+
+    cfg, requests, responses = provider
+    responses.append(response("interpret_demonstration", interpretation("unclear"), "interpretation"))
+    client = Client()
+    policy = GPTPolicy(replace(cfg, icl_mode=mode), demonstration=demonstration())
+    with pytest.raises(RuntimeError, match="unclear"):
+        PolicyRunner(policy, RobotAdapter(client)).run(IMITATION_INSTRUCTION, 2)
+    assert len(requests) == 1
+    assert client.calls == []
+
+
+@pytest.mark.parametrize("mode", ["frames", "description"])
+def test_video_reset_reinterprets_demo_instead_of_reusing_old_goal(provider, mode):
+    from isaaclab_policies.demonstration import IMITATION_INSTRUCTION
+
+    cfg, requests, responses = provider
+    responses.extend(
+        [
+            response("interpret_demonstration", interpretation(), "interpretation1"),
+            response("interpret_demonstration", interpretation("unclear"), "interpretation2"),
+        ]
+    )
+    policy = GPTPolicy(replace(cfg, icl_mode=mode), demonstration=demonstration())
+    policy.reset(IMITATION_INSTRUCTION, RobotSpec(**metadata()))
+    with pytest.raises(RuntimeError, match="unclear"):
+        policy.reset(IMITATION_INSTRUCTION, RobotSpec(**metadata()))
+    assert policy.demonstration_interpretation["status"] == "unclear"
+    assert policy.demonstration_instruction is None
+    assert len(requests) == 2
+
+
+def test_icl_mode_defaults_to_frames_and_rejects_unknown_values():
+    assert GPTConfig().icl_mode == "frames"
+    for mode in (None, "text", "", 1):
+        with pytest.raises(ValueError, match="icl_mode"):
+            GPTConfig(icl_mode=mode)
+
+
+def test_image_policy_rejection_reports_code_without_echoing_provider_message(provider):
+    cfg, requests, responses = provider
+    responses.append(
+        {
+            "http_status": 400,
+            "error": {"code": "content_policy_violation", "message": "echo test-secret and private request content"},
+        }
+    )
+    with pytest.raises(RuntimeError, match="content_policy_violation") as error:
+        start(cfg).predict(policy_observation())
+    assert "test-secret" not in str(error.value)
+    assert "private request content" not in str(error.value)
+    assert "no action dispatched" in str(error.value)
+    assert len(requests) == 1
