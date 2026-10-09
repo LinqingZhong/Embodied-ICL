@@ -38,7 +38,7 @@ def main():
 
     wait_for(lambda s: s["phase"] == "ready" and s["sequence"] > 0)
     sizes = {}
-    for name in ("scene", "wrist"):
+    for name in ("scene", "wrist", "front"):
         image = Image.open(io.BytesIO(request(f"/api/camera/{name}.jpg").read()))
         sizes[name] = image.size
         assert image.convert("L").getextrema()[0] != image.convert("L").getextrema()[1]
@@ -62,7 +62,7 @@ def main():
     wait_for(lambda s: s["gripper_width"] > 0.07)
     snapshot = json.load(request("/api/snapshot", {}))
     with zipfile.ZipFile(io.BytesIO(request(snapshot["download"]).read())) as archive:
-        assert set(archive.namelist()) == {"scene.jpg", "wrist.jpg", "metadata.json"}
+        assert set(archive.namelist()) == {"scene.jpg", "wrist.jpg", "front.jpg", "metadata.json"}
         metadata = json.loads(archive.read("metadata.json"))
         assert metadata["sequence"] > 0 and len(metadata["positions"]) == 9
     command("pause")

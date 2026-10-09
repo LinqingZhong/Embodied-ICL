@@ -14,7 +14,7 @@ fs.mkdirSync(artifacts,{recursive:true});
   page.on('pageerror', e=>errors.push(e.message));
   await page.request.post(base+'/api/command',{data:{action:'resume'}});
   await page.goto(base);
-  await page.waitForFunction(()=>document.querySelectorAll('.image-wrap.ready:not(.stale)').length===2);
+  await page.waitForFunction(()=>document.querySelectorAll('.image-wrap.ready:not(.stale)').length===3);
   assert.equal(await page.locator('#joints input').count(),7);
   await page.waitForFunction(()=>document.querySelector('#mode').textContent==='运行中');
   await page.locator('#pause').click();
@@ -40,10 +40,10 @@ fs.mkdirSync(artifacts,{recursive:true});
   await page.screenshot({path:path.join(artifacts,'desktop.png'),fullPage:true});
   // Camera requests fail while the state connection remains healthy.
   await page.route('**/api/camera/**',route=>route.abort());
-  await page.waitForFunction(()=>document.querySelectorAll('.image-wrap.stale').length===2);
+  await page.waitForFunction(()=>document.querySelectorAll('.image-wrap.stale').length===3);
   assert.match(await page.locator('#connection').textContent(),/已连接/);
   await page.unroute('**/api/camera/**');
-  await page.waitForFunction(()=>document.querySelectorAll('.image-wrap.ready:not(.stale)').length===2);
+  await page.waitForFunction(()=>document.querySelectorAll('.image-wrap.ready:not(.stale)').length===3);
   // State connection failure disables all controls and recovers.
   await page.route('**/api/status',route=>route.abort());
   await page.waitForFunction(()=>document.querySelector('#pause').disabled);

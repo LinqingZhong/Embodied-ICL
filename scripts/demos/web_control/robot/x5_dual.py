@@ -12,7 +12,17 @@ PROFILE["instances"] = [
 ]
 PROFILE["joints"] = []
 PROFILE["grippers"] = []
-PROFILE["cameras"] = [{"name": "scene", "label": "场景相机"}]
+PROFILE["cameras"] = [
+    {"name": "scene", "label": "场景相机"},
+    {
+        "name": "head",
+        "label": "中央头部相机",
+        "instance": "left",
+        "body": "base_link",
+        "eye_offset": [0.3, -0.05, 0.8],
+        "target": [0, -0.1, 0.82],
+    },
+]
 for side, label in [("left", "左"), ("right", "右")]:
     for joint in SINGLE["joints"]:
         PROFILE["joints"].append({**joint, "name": f"{side}/{joint['name']}", "group": f"{label}臂"})

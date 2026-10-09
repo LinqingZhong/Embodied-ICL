@@ -268,7 +268,9 @@ def main():
                     height=args.height,
                     data_types=["rgb"],
                     spawn=sim_utils.PinholeCameraCfg(
-                        focal_length=18, horizontal_aperture=20.955, clipping_range=(0.02, 20)
+                        focal_length=camera_profile.get("focal_length", 18),
+                        horizontal_aperture=20.955,
+                        clipping_range=(0.02, 20),
                     ),
                 )
             )

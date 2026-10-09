@@ -21,6 +21,13 @@ PROFILE = {
     "cameras": [
         {"name": "scene", "label": "场景相机"},
         {"name": "wrist", "label": "腕部相机", "body": "panda_hand", "eye_offset": [0, -0.1, 0.04]},
+        {
+            "name": "front",
+            "label": "正面观察相机",
+            "body": "panda_link0",
+            "eye_offset": [1.35, 0.35, 0.85],
+            "target": [0.35, 0, 0.35],
+        },
     ],
     "scene_defaults": {},
 }

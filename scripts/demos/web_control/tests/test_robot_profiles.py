@@ -161,3 +161,17 @@ def test_cobot_magic_four_arms_and_opposed_fingers():
     assert len(p["grippers"]) == 4
     assert p["grippers"][0]["open"] == {"fl_joint7": 0.04, "fl_joint8": -0.04}
     assert not any(j["name"] in ("left_joint", "right_joint") for j in p["joints"])
+
+
+def test_robot_observation_cameras_cover_dual_center_and_franka_front():
+    from robot import get_profile
+
+    dual = get_profile("x5_dual")
+    head = next(c for c in dual["cameras"] if c["name"] == "head")
+    assert head["body"] == "base_link" and head["instance"] == "left"
+    eye = [a + b for a, b in zip(dual["instances"][0]["position"], head["eye_offset"])]
+    assert eye[0] == 0 and eye[2] > 1.2
+    assert {c["name"] for c in dual["cameras"]} >= {"head", "left_wrist", "right_wrist"}
+    front = next(c for c in get_profile("franka")["cameras"] if c["name"] == "front")
+    assert front["body"] == "panda_link0"
+    assert front["eye_offset"][0] > front["target"][0] > 0

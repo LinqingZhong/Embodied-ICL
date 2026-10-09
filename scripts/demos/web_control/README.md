@@ -83,10 +83,10 @@ Python 客户端也连接此地址。服务只监听回环地址；关闭浏览�
 
 | `--robot` / profile | 直接控制关节与夹爪 | 相机 | FK/IK 的 `arm` |
 |---|---|---|---|
-| `franka` / [franka.py](robot/franka.py) | 7 轴；双指夹爪 | `scene`、`wrist` | `arm` |
+| `franka` / [franka.py](robot/franka.py) | 7 轴；双指夹爪 | `scene`、`wrist`、`front` | `arm` |
 | `a2d` / [a2d.py](robot/a2d.py) | 18 轴：升降、躯干、头部和双臂；左右夹爪 | `scene`、`head`、`left_wrist`、`right_wrist` | 不支持，使用 joint 控制 |
 | `x5` / [x5.py](robot/x5.py) | 6 轴；双指夹爪 | `scene`、`wrist` | `arm` |
-| `x5_dual` / [x5_dual.py](robot/x5_dual.py) | 两套 6 轴臂；两个独立夹爪 | `scene`、`left_wrist`、`right_wrist` | `left`、`right` |
+| `x5_dual` / [x5_dual.py](robot/x5_dual.py) | 两套 6 轴臂；两个独立夹爪 | `scene`、`head`、`left_wrist`、`right_wrist` | `left`、`right` |
 | `cobot_magic` / [cobot_magic.py](robot/cobot_magic.py) | 四套 6 轴臂、支架 2 轴；四个夹爪 | `scene`、`head`、`fl_wrist`、`fr_wrist` | `fl`、`fr`、`bl`、`br` |
 
 模型通过 `ISAACLAB_ASSETS_DATA_DIR` 定位。X5 和 Cobot 的 USD、引用层与网格随 Git LFS 管理，克隆后执行 `git lfs pull`；迁移资产时保留完整目录。Franka、A2D 和部分桌子/瓶子使用 NVIDIA 云资产，首次运行需要访问对应资源。
@@ -117,7 +117,7 @@ Python 客户端也连接此地址。服务只监听回环地址；关闭浏览�
 
 A2D 使用仓库 `AGIBOT_A2D_CFG`，基座固定用于上半身调试。升降单位为米，其余直接关节为弧度；头部连续偏航关节在面板中限制为 ±π/2。左右夹爪各联动三个驱动/支撑关节：张开 0.994 rad，左闭合 0、右闭合 0.2 rad；不要将其当作毫米开度或遗漏 Support 关节。默认场景为 [a2d_table_bottle.json](scenes/a2d_table_bottle.json)，与 Franka 桌面高度不同。
 
-Franka 使用仓库 `FRANKA_PANDA_CFG`；手指单侧张开目标为 0.04 m、闭合为 0。Franka 没有头部，`scene` 是固定世界视角，`wrist` 安装于 `panda_hand`。各机器人相机均为新增仿真 RGB 传感器，安装参数不代表实体相机标定。
+Franka 使用仓库 `FRANKA_PANDA_CFG`；手指单侧张开目标为 0.04 m、闭合为 0。Franka 没有头部，`scene` 是固定世界视角，`wrist` 安装于 `panda_hand`，`front` 从机械臂前方观察操作。ARX 双臂的 `head` 位于双臂中央上方。各机器人相机均为新增仿真 RGB 传感器，安装参数不代表实体相机标定。
 
 ## Python 关节控制
 
@@ -305,7 +305,11 @@ OBJ/STL/FBX 可先转换，`--mass` 才会添加动态刚体与质量属性：
 
 相机 `body` 指实际运动连杆；A2D 头部为 `link_pitch_head`，腕部为 `left_base_link/right_base_link`。`eye_offset` 是初始世界坐标偏移，`target` 是初始世界注视点；启动时根据物理连杆位姿求局部安装变换，之后随连杆运动，不持续自动瞄准物体。
 
-精确安装时同时填写局部 `mount_pos` 和 `mount_rot`；四元数 wxyz，USD/OpenGL 相机约定为 **-Z 向前、+Y 向上**。以下仅说明字段格式，需替换真实安装值：
+精确安装时同时填写局部 `mount_pos` 和 `mount_rot`；四元数 wxyz，USD/OpenGL 相机约定为 **-Z 向前、+Y 向上**。
+
+AgileX 的 `head` 已使用固定安装位姿，朝机器人 +X 正前方并向下俯视 30°，不随 `--grasp-arm fl/fr` 或 `wrist_target` 偏向某一侧。它的 `focal_length=9` 对应约 99° 水平视野；其他相机默认焦距为 18。相机支架关节运动仍会带动头部相机。相机配置修改需重启仿真生效。
+
+以下仅说明字段格式，需替换真实安装值：
 
 ```python
 camera = {
@@ -517,7 +521,7 @@ EEF 检查在每臂初态附近采样 12 组姿态，并在三个实际运动姿
 
 其它检查入口见 [tests/](tests/)：`check_x5_live.py`、`check_x5_dual_live.py`、`check_cobot_live.py`、`check_a2d_live.py` 检查各机器人网页操作；`check_recording_profiles_live.py` 检查录制与目标重放；`check_scene_assets.py` 通过 `isaaclab.sh -p ... --headless` 启动独立物理检查。
 
-浏览器检查固定针对 Franka 的 7 个关节和两路相机，需要 Playwright/Chromium，以及 `start_web_control.sh --robot franka` 启动的 web 模式服务：
+浏览器检查固定针对 Franka 的 7 个关节和三路相机，需要 Playwright/Chromium，以及 `start_web_control.sh --robot franka` 启动的 web 模式服务：
 
 ```bash
 node scripts/demos/web_control/tests/check_browser.cjs

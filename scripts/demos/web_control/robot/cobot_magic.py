@@ -12,7 +12,18 @@ PROFILE = {
     "grippers": [],
     "cameras": [
         {"name": "scene", "label": "场景相机"},
-        {"name": "head", "label": "顶部相机", "body": "camera_stand_2_Link", "eye_offset": [0.12, 0, 0.05]},
+        {
+            "name": "head",
+            "label": "顶部相机",
+            "body": "camera_stand_2_Link",
+            "eye_offset": [0.12, 0, 0.05],
+            "mount_pos": [0.12, 0, 0.05],
+            # USD camera (-Z forward, +Y up), facing robot +X with 30 degrees downward pitch.
+            # Fix the mount in the stand frame so neither grasp-arm selection nor wrist_target sets its yaw.
+            "mount_rot": [0.6123724357, 0.3535533906, -0.3535533906, -0.6123724357],
+            # About 99 degrees horizontal FOV: include both front workspaces without panning.
+            "focal_length": 9.0,
+        },
     ],
 }
 for prefix, label in [("fl", "前左"), ("fr", "前右"), ("bl", "后左"), ("br", "后右")]:
