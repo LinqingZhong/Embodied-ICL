@@ -165,6 +165,7 @@ class RobotServer(RecordingControl, EefControl, ControlState):
                 )
             if images is not None:
                 self.latest["targets"] = self.applied.copy()
+                self.latest["eef_poses"] = copy.deepcopy(self.eef_poses)
             if self._pending_step and self._pending_step == self.active_task:
                 task = self.tasks[self.active_task]
                 task["executed_steps"] += 1
@@ -194,6 +195,37 @@ class RobotServer(RecordingControl, EefControl, ControlState):
                 controllable_joint_names=[self.names[i] for i in self.arms + self.fingers],
                 limits=[[v if math.isfinite(v) else None for v in pair] for pair in self.limits],
                 active_task=self.active_task,
+            )
+
+    def robot_spec(self):
+        """Return native control metadata, with unknown profile units left unset.
+
+        Legacy configure() has no unit metadata: its arms use rad and fingers m.
+        configure_profile() units and native gripper mappings take precedence.
+        """
+        with self.lock:
+            if self.phase != "ready":
+                raise RuntimeError("Simulator is not ready")
+            legacy = not self.joint_meta and not self.grippers
+            units = {
+                self.names[i]: self.joint_meta.get(i, {}).get("unit", "rad" if legacy else None) for i in self.arms
+            }
+            units.update({self.names[i]: "m" if legacy else None for i in self.fingers})
+            for gripper in self.grippers:
+                units.update({self.names[i]: gripper.get("unit") for i in gripper["ids"]})
+            return dict(
+                name=self.robot_label,
+                joint_names=self.names.copy(),
+                controllable_joint_names=[self.names[i] for i in self.arms + self.fingers],
+                limits=[[v if math.isfinite(v) else None for v in pair] for pair in self.limits],
+                joint_units=units,
+                grippers=[
+                    {key: copy.deepcopy(gripper.get(key)) for key in ("name", "label", "unit", "open", "close")}
+                    for gripper in self.grippers
+                ],
+                arms=copy.deepcopy(self.get_arms()),
+                cameras=[camera["name"] for camera in self.cameras],
+                physics_dt=self.physics_dt,
             )
 
     def status(self):

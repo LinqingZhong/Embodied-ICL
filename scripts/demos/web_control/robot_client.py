@@ -5,7 +5,7 @@ import json
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 class RobotError(RuntimeError):
@@ -25,6 +25,7 @@ class Observation:
     velocities: list[float]
     targets: list[float]
     images: dict[str, bytes]
+    eef_poses: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,12 @@ class RobotClient:
     def get_joint_state(self):
         return self._request("/api/robot/joints")
 
+    def get_robot_spec(self):
+        return self._request("/api/robot/spec")
+
+    def get_status(self):
+        return self._request("/api/status")
+
     def get_observation(self):
         data = self._request("/api/robot/observation")
         return Observation(
@@ -63,6 +70,7 @@ class RobotClient:
                 for key in ("sequence", "sim_time", "captured_at", "joint_names", "positions", "velocities", "targets")
             },
             images={name: base64.b64decode(value) for name, value in data["images"].items()},
+            eef_poses=data.get("eef_poses", {}),
         )
 
     @staticmethod

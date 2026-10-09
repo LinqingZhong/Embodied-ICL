@@ -172,6 +172,7 @@ Python 客户端封装以下路由。直接调用时，POST 使用 JSON；FK 的
 | 方法 | 路径 | 内容 |
 |---|---|---|
 | GET | `/api/robot/joints` | 关节、物理步长、活动任务、实测 EEF 位姿 |
+| GET | `/api/robot/spec` | 机器人名称、关节单位/限位、夹爪开闭映射、手臂与相机描述 |
 | GET | `/api/robot/observation` | 同帧关节状态与 Base64 JPEG |
 | POST | `/api/robot/chunks` | `joint_names`、`positions`、`steps_per_action` |
 | GET | `/api/robot/chunks/{id}` | 任务状态、步数与终态误差 |
@@ -222,6 +223,8 @@ EEF chunk 最多 128 行，位置与姿态行数一致。首点以当前状态�
 求解不做插值、碰撞规划或到位等待；一次 chunk 控制一只手臂。需要多臂同步时，可分别求 IK，再合并成一个 joint chunk。数值 IK 可能因初值、奇异点或限位失败，也可能切换分支；调用端应检查关节序列。Franka 有冗余自由度，应比较 FK→IK→FK 的位姿误差，而非要求关节角唯一。
 
 `get_joint_state()["eef_poses"]` 是物理引擎独立测量的法兰位姿。数值求解容差、FK/物理一致性和实际目标跟踪误差是三项不同指标，IK 收敛不保证物理到位。
+
+`get_observation().eef_poses` 则与返回的相机图像、关节位置同帧，适合策略输入；`RobotClient.get_robot_spec()` 提供静态接口描述，`get_status()` 提供就绪、暂停和活动任务状态。
 
 ## 场景与物体
 

@@ -36,6 +36,10 @@ def register_robot_routes(app, robot):
     def joints():
         return invoke(robot.joint_state)
 
+    @app.get("/api/robot/spec")
+    def spec():
+        return invoke(robot.robot_spec)
+
     @app.get("/api/robot/observation")
     def observation():
         frame = robot.frame()
