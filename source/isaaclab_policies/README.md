@@ -385,6 +385,41 @@ python scripts/demos/web_control/run_policy.py \
 
 库不会修改执行器来适配某个模型，也不会提前导入 Torch、Transformers 或具体 VLA 框架。
 
+## 录制真实 GPT 抓取与回答视频
+
+录制入口为 `scripts/demos/web_control/examples/record_gpt_policy.py`。它复用上述策略循环，按 `--cameras` 同时筛选 `RobotSpec.cameras` 和观测图像，拒绝发送 `scene`；每轮保存实际输入快照、公开模型回复与执行回执。默认相机配置已补充 ARX 双臂中央高位 `head` 和 Franka 正面 `front` 视角。
+
+AgileX 的 `head` 使用相机支架坐标系中的固定安装位姿：朝机器人正前方（+X），向下俯视 30°，无左右偏转或画面侧倾；头部水平视野约 99°，覆盖左右操作区。选择 `fl` / `fr` 抓取或改变 `wrist_target` 不会改变头部安装朝向；实际移动相机支架关节仍会带动相机。修改在重新启动仿真后生效，之前生成的视频保留原视角。
+
+| 机器人 | 仿真 `--robot` | 录制 `--cameras` |
+|---|---|---|
+| AgileX Cobot Magic | `cobot_magic` | `head fl_wrist fr_wrist` |
+| ARX X5 双臂 | `x5_dual` | `head left_wrist right_wrist` |
+| Franka Panda | `franka` | `front wrist` |
+
+例如已经启动对应仿真后（`--grasp-demo` 创建桌面红色方块任务）：
+
+```bash
+python scripts/demos/web_control/examples/record_gpt_policy.py \
+  --url http://127.0.0.1:8083 \
+  --output output/gpt_grasp/new_attempt \
+  --config source/isaaclab_policies/configs/gpt_lingzhi.json \
+  --cameras head fl_wrist fr_wrist --max-steps 40 \
+  --instruction '用前左臂抓起红色方块，抬高约10厘米并保持，然后结束'
+
+# 仅在录制结束后独立计算抬升指标；不把物体真值送给策略。
+python scripts/demos/web_control/examples/evaluate_gpt_recording.py \
+  output/gpt_grasp/new_attempt
+
+python scripts/demos/web_control/examples/export_gpt_video.py \
+  output/gpt_grasp/new_attempt \
+  --output output/gpt_grasp/grasp_annotated.mp4
+```
+
+视频只显示选中的相机、GPT 实际公开回答/工具参数和执行回执；长回复分页显示，不包含隐藏推理。默认缩短推理等待、保留动作原速，字幕阅读暂停单独标注；`--full` 保留完整录制时间线并增加阅读暂停。导出同时生成 JPG 和时间线 JSON。原始 HDF5 可包含服务端其他相机，但它们没有进入 GPT 输入或该视频。
+
+`result.json` 保存本次任务指令、配置、执行结果和评估；`trace.jsonl` 保存每轮实际工具调用，`instructions.txt` 保存完整控制 prompt，`observations/` 保存真正发给 GPT 的各轮图片及状态。抬升指标达到要求后仍需查看夹持画面，独立评估不会只凭模型 `finish` 自动标记成功。
+
 ## 验证
 
 ```bash
